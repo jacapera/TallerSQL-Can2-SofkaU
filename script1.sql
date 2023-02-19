@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS venta (
   ven_id INT NOT NULL AUTO_INCREMENT,
   ven_fecha DATE NOT NULL,
   ven_valor_total DECIMAL(10,2) NOT NULL,
+  ven_eliminada BOOLEAN DEFAULT 0 NOT NULL,
   cliente_cli_id INT NOT NULL,
   PRIMARY KEY( ven_id ),
   INDEX fk_venta_cliente_idx ( cliente_cli_id ASC ) VISIBLE,
@@ -423,3 +424,73 @@ START TRANSACTION;
   -- Confirmar la transacción
 COMMIT;
 
+-- -----------------------------------------------------
+-- borrado logico en venta
+-- -----------------------------------------------------
+UPDATE
+  venta
+SET
+  eliminada = 1
+WHERE
+  ven_id = 1;
+
+UPDATE
+  venta
+SET
+  eliminada = 1
+WHERE
+  ven_id = 2;
+-- -----------------------------------------------------
+-- borrado físico en venta
+-- -----------------------------------------------------
+START TRANSACTION;
+  DELETE
+    FROM
+      detalle_venta
+    WHERE
+      venta_ven_id = 3;
+  DELETE
+    FROM
+      venta
+    WHERE
+      ven_id = 3;
+COMMIT;
+
+START TRANSACTION;
+  DELETE
+    FROM
+      detalle_venta
+    WHERE
+      venta_ven_id = 4;
+  DELETE
+    FROM
+      venta
+    WHERE
+      ven_id = 4;
+COMMIT;
+-- -----------------------------------------------------
+-- actualizar nombre de 3 productos
+-- -----------------------------------------------------
+UPDATE
+  productos
+  SET
+    prod_descripcion = 'Banano',
+    proveedor_id = 3
+  WHERE
+    prod_id = 1;
+
+UPDATE
+  productos
+  SET
+    prod_descripcion = 'Apio',
+    proveedor_id = 2
+  WHERE
+    prod_id = 2;
+
+UPDATE
+  productos
+  SET
+    prod_descripcion = 'Espinaca',
+    proveedor_id = 3
+  WHERE
+    prod_id = 3;
