@@ -21,3 +21,6 @@ Se debe crear dos script SQL en dos archivos.sql, los cuales cuando se ejecuten 
  1. Consulta SQL donde pueda obtener los productos vendidos digitando tipo de documento y número de documento.
  2. Consultar productos por medio del nombre, el cual debe mostrar quien o quienes han sido sus proveedores.
  3. [PLUS no obligatorio] Crear una consulta que me permita ver qué producto ha sido el mas vendido y en qué cantidades de mayor a menor.
+ 
+ ![image](https://user-images.githubusercontent.com/96667971/220204839-77222aab-1576-4e82-a5db-45966ad30604.png)
+
