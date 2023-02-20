@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS producto (
   prod_descripcion VARCHAR(45) NOT NULL,
   prod_precio_compra DECIMAL(10,2),
   prod_precio_venta DECIMAL(10,2),
-  proveedor_id INT NULL,
-  PRIMARY KEY ( prod_id ),
+  prod_proveedor_id INT NULL,
+  PRIMARY KEY ( prod_id )
 ) ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Tabla proveedor
@@ -127,9 +127,9 @@ CREATE TABLE IF NOT EXISTS detalle_venta (
     ON UPDATE CASCADE
 ) ENGINE = InnoDB;
 
---=======================================================================
+-- =======================================================================
 --                      INSERT
---=======================================================================
+-- =======================================================================
 -- -----------------------------------------------------
 -- Tabla cliente
 -- -----------------------------------------------------
@@ -142,7 +142,7 @@ INSERT INTO cliente
 -- Tabla producto
 -- -----------------------------------------------------
 INSERT INTO producto
-  (prod_descripcion, prod_precio_compra, prod_precio_venta, proveedor_id)
+  (prod_descripcion, prod_precio_compra, prod_precio_venta, prod_proveedor_id)
   VALUES('Tomate', 2000, 3000, 3), ('Cebolla', 2500, 3500, 3), ('Lechuga', 2000, 2800, 3),
     ('Aceite', 1800, 3500, 1), ('Azucar', 2200, 3400, 1), ('fideos', 1700, 2500, 1),
     ('Leche', 2200, 3800, 2), ('Huevos', 11200, 19000, 2), ('Jamon', 5500, 9200, 2);
@@ -255,6 +255,37 @@ START TRANSACTION;
   INSERT INTO detalle_compra
     (compra_comp_id, producto_prod_id, detcomp_cantidad_producto)
     VALUES (@compra_id, 9, 30);
+  -- Calcular el valor total de la compra
+  SELECT
+    SUM(detcomp_cantidad_producto * prod_precio_compra)
+    INTO @valor_total
+  FROM detalle_compra
+    INNER JOIN producto ON detalle_compra.producto_prod_id = producto.prod_id
+  WHERE compra_comp_id = @compra_id;
+  -- Actualizar el registro en la tabla compra con el valor total de la compra
+  UPDATE compra
+  SET comp_valor_total = @valor_total
+  WHERE comp_id = @compra_id;
+  -- Confirmar la transacción
+COMMIT;
+
+START TRANSACTION;
+  -- Insertar un registro en la tabla compra
+  INSERT INTO compra
+    (proveedor_prov_id, comp_fecha,comp_valor_total )
+    VALUES (1, '2023-02-20', 0);
+  -- Obtener el ID de la compra recién creada
+  SET @compra_id = LAST_INSERT_ID();
+  -- Para cada producto que se haya comprado, insertar un registro en la tabla detalle_compra
+  INSERT INTO detalle_compra
+    (compra_comp_id, producto_prod_id, detcomp_cantidad_producto)
+    VALUES(@compra_id, 1, 100);
+  INSERT INTO detalle_compra
+    (compra_comp_id, producto_prod_id, detcomp_cantidad_producto)
+    VALUES(@compra_id, 4, 120);
+  INSERT INTO detalle_compra
+    (compra_comp_id, producto_prod_id, detcomp_cantidad_producto)
+    VALUES(@compra_id, 8, 50);
   -- Calcular el valor total de la compra
   SELECT
     SUM(detcomp_cantidad_producto * prod_precio_compra)
@@ -411,6 +442,9 @@ START TRANSACTION;
   INSERT INTO detalle_venta
     (venta_ven_id, producto_prod_id, detven_cantidad_producto)
     VALUES (@venta_id, 4, 8);
+  INSERT INTO detalle_venta
+    (venta_ven_id, producto_prod_id, detven_cantidad_producto)
+    VALUES (@venta_id, 9, 5);
   -- Calcular el valor total de la venta
   SELECT
     SUM(detven_cantidad_producto * prod_precio_venta) INTO @valor_total
@@ -430,14 +464,14 @@ COMMIT;
 UPDATE
   venta
 SET
-  eliminada = 1
+  ven_eliminada = 1
 WHERE
   ven_id = 1;
 
 UPDATE
   venta
 SET
-  eliminada = 1
+  ven_eliminada = 1
 WHERE
   ven_id = 2;
 -- -----------------------------------------------------
@@ -472,25 +506,25 @@ COMMIT;
 -- actualizar nombre de 3 productos
 -- -----------------------------------------------------
 UPDATE
-  productos
+  producto
   SET
     prod_descripcion = 'Banano',
-    proveedor_id = 3
+    prod_proveedor_id = 3
   WHERE
     prod_id = 1;
 
 UPDATE
-  productos
+  producto
   SET
     prod_descripcion = 'Apio',
-    proveedor_id = 2
+    prod_proveedor_id = 2
   WHERE
     prod_id = 2;
 
 UPDATE
-  productos
+  producto
   SET
     prod_descripcion = 'Espinaca',
-    proveedor_id = 3
+    prod_proveedor_id = 3
   WHERE
     prod_id = 3;
